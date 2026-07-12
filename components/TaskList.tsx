@@ -7,10 +7,12 @@ export function TaskList({
   tasks,
   onToggle,
   onDelete,
+  onRename,
 }: {
   tasks: Task[];
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onRename: (task: Task, title: string) => void;
 }) {
   if (tasks.length === 0) {
     return (
@@ -28,6 +30,7 @@ export function TaskList({
           task={task}
           onToggle={onToggle}
           onDelete={onDelete}
+          onRename={onRename}
         />
       ))}
     </ul>

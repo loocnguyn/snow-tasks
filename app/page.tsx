@@ -44,6 +44,13 @@ export default function Home() {
     await supabase.from("tasks").delete().eq("id", task.id);
   }
 
+  async function renameTask(task: Task, title: string) {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, title } : t)),
+    );
+    await supabase.from("tasks").update({ title }).eq("id", task.id);
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-20 sm:py-24">
       <header className="animate-in flex flex-col items-center text-center">
@@ -67,6 +74,7 @@ export default function Home() {
             tasks={tasks}
             onToggle={toggleTask}
             onDelete={deleteTask}
+            onRename={renameTask}
           />
         )}
       </section>
