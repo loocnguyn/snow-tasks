@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
+import { TaskSummary } from "@/components/TaskSummary";
 import type { Task } from "@/lib/types";
 
 export default function Home() {
@@ -67,6 +68,10 @@ export default function Home() {
 
       <section className="animate-in mt-10 flex flex-col gap-4">
         <TaskInput onAdd={addTask} />
+        <TaskSummary
+          total={tasks.length}
+          remaining={tasks.filter((t) => !t.is_done).length}
+        />
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
         ) : (
