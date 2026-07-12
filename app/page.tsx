@@ -5,11 +5,13 @@ import { supabase } from "@/lib/supabase";
 import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
 import { TaskSummary } from "@/components/TaskSummary";
+import { TaskFilter, type Filter } from "@/components/TaskFilter";
 import type { Task } from "@/lib/types";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("all");
 
   useEffect(() => {
     supabase
@@ -68,15 +70,24 @@ export default function Home() {
 
       <section className="animate-in mt-10 flex flex-col gap-4">
         <TaskInput onAdd={addTask} />
-        <TaskSummary
-          total={tasks.length}
-          remaining={tasks.filter((t) => !t.is_done).length}
-        />
+        <div className="flex items-center justify-between gap-3">
+          <TaskSummary
+            total={tasks.length}
+            remaining={tasks.filter((t) => !t.is_done).length}
+          />
+          <TaskFilter value={filter} onChange={setFilter} />
+        </div>
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
         ) : (
           <TaskList
-            tasks={tasks}
+            tasks={tasks.filter((t) =>
+              filter === "active"
+                ? !t.is_done
+                : filter === "done"
+                  ? t.is_done
+                  : true,
+            )}
             onToggle={toggleTask}
             onDelete={deleteTask}
             onRename={renameTask}
