@@ -54,6 +54,13 @@ export default function Home() {
     await supabase.from("tasks").update({ title }).eq("id", task.id);
   }
 
+  async function clearDone() {
+    const doneIds = tasks.filter((t) => t.is_done).map((t) => t.id);
+    if (doneIds.length === 0) return;
+    setTasks((prev) => prev.filter((t) => !t.is_done));
+    await supabase.from("tasks").delete().in("id", doneIds);
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-20 sm:py-24">
       <header className="animate-in flex flex-col items-center text-center">
@@ -77,6 +84,14 @@ export default function Home() {
           />
           <TaskFilter value={filter} onChange={setFilter} />
         </div>
+        {tasks.some((t) => t.is_done) && (
+          <button
+            onClick={clearDone}
+            className="text-muted self-end text-xs underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Xoá việc đã xong
+          </button>
+        )}
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
         ) : (
