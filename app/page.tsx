@@ -76,7 +76,7 @@ export default function Home() {
       </header>
 
       <section className="animate-in mt-10 flex flex-col gap-4">
-        <TaskInput onAdd={addTask} />
+        <TaskInput onAdd={addTask} existingTitles={tasks.map((t) => t.title)} />
         <div className="flex items-center justify-between gap-3">
           <TaskSummary
             total={tasks.length}
