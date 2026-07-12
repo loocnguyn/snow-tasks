@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function TaskInput({
   onAdd,
@@ -11,6 +11,24 @@ export function TaskInput({
 }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+
+      if (e.key === "/" && !isTyping) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+      if (e.key === "Escape" && target === inputRef.current) {
+        inputRef.current?.blur();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,12 +52,13 @@ export function TaskInput({
     <form onSubmit={submit} className="flex flex-col gap-1.5">
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
             if (error) setError(null);
           }}
-          placeholder="Hôm nay cần làm gì?"
+          placeholder="Hôm nay cần làm gì? (nhấn / để focus)"
           className="glass flex-1 rounded-xl px-4 py-3 text-sm outline-none placeholder:text-muted focus:border-accent/60"
         />
         <button
