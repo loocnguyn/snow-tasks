@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Snow Tasks — Việc cần làm",
   description: "Ứng dụng ghi lại những việc cần làm mỗi ngày.",
+  themeColor: "#060910",
 };
 
 export default function RootLayout({

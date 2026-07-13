@@ -69,12 +69,12 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 py-20 sm:py-24">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-12 sm:px-6 sm:py-24">
       <header className="animate-in flex flex-col items-center text-center">
         <span className="glass mb-4 rounded-full px-4 py-1.5 text-xs tracking-wide text-muted uppercase">
           ⛄ Snow Tasks
         </span>
-        <h1 className="text-gradient text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="text-gradient text-3xl font-bold tracking-tight sm:text-5xl">
           Việc cần làm
         </h1>
         <p className="text-muted mt-3 text-sm sm:text-base">
@@ -82,9 +82,9 @@ export default function Home() {
         </p>
       </header>
 
-      <section className="animate-in mt-10 flex flex-col gap-4">
+      <section className="animate-in mt-8 flex flex-col gap-4 sm:mt-10">
         <TaskInput onAdd={addTask} existingTitles={tasks.map((t) => t.title)} />
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <TaskSummary
             total={tasks.length}
             remaining={tasks.filter((t) => !t.is_done).length}
