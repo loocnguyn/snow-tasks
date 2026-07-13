@@ -19,7 +19,7 @@ export default function Home() {
     supabase
       .from("tasks")
       .select("*")
-      .order("created_at", { ascending: false })
+      .order("position", { ascending: true })
       .returns<Task[]>()
       .then(({ data }) => {
         setTasks(data ?? []);
@@ -28,15 +28,25 @@ export default function Home() {
   }, []);
 
   async function addTask(title: string) {
+    const minPosition = tasks.reduce((min, t) => Math.min(min, t.position), 0);
     const { data } = await supabase
       .from("tasks")
-      .insert({ title })
+      .insert({ title, position: minPosition - 1 })
       .select()
       .single<Task>();
     if (data) {
       setTasks((prev) => [data, ...prev]);
       setToast("Đã thêm việc mới");
     }
+  }
+
+  async function reorderTasks(reordered: Task[]) {
+    setTasks(reordered);
+    await Promise.all(
+      reordered.map((task, index) =>
+        supabase.from("tasks").update({ position: index }).eq("id", task.id),
+      ),
+    );
   }
 
   async function toggleTask(task: Task) {
@@ -113,6 +123,7 @@ export default function Home() {
             onToggle={toggleTask}
             onDelete={deleteTask}
             onRename={renameTask}
+            onReorder={filter === "all" ? reorderTasks : undefined}
           />
         )}
       </section>

@@ -8,11 +8,19 @@ export function TaskItem({
   onToggle,
   onDelete,
   onRename,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
 }: {
   task: Task;
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onRename: (task: Task, title: string) => void;
+  draggable?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.title);
@@ -28,7 +36,15 @@ export function TaskItem({
   }
 
   return (
-    <li className="glass group flex items-center gap-3 rounded-xl px-4 py-3">
+    <li
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      className={`glass group flex items-center gap-3 rounded-xl px-4 py-3 ${
+        draggable ? "cursor-grab active:cursor-grabbing" : ""
+      }`}
+    >
       <button
         onClick={() => onToggle(task)}
         aria-label={task.is_done ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
