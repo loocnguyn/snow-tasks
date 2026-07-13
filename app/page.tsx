@@ -6,12 +6,14 @@ import { TaskInput } from "@/components/TaskInput";
 import { TaskList } from "@/components/TaskList";
 import { TaskSummary } from "@/components/TaskSummary";
 import { TaskFilter, type Filter } from "@/components/TaskFilter";
+import { Toast } from "@/components/Toast";
 import type { Task } from "@/lib/types";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
@@ -31,7 +33,10 @@ export default function Home() {
       .insert({ title })
       .select()
       .single<Task>();
-    if (data) setTasks((prev) => [data, ...prev]);
+    if (data) {
+      setTasks((prev) => [data, ...prev]);
+      setToast("Đã thêm việc mới");
+    }
   }
 
   async function toggleTask(task: Task) {
@@ -45,6 +50,7 @@ export default function Home() {
   async function deleteTask(task: Task) {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
     await supabase.from("tasks").delete().eq("id", task.id);
+    setToast("Đã xoá việc");
   }
 
   async function renameTask(task: Task, title: string) {
@@ -59,6 +65,7 @@ export default function Home() {
     if (doneIds.length === 0) return;
     setTasks((prev) => prev.filter((t) => !t.is_done));
     await supabase.from("tasks").delete().in("id", doneIds);
+    setToast("Đã xoá các việc hoàn thành");
   }
 
   return (
@@ -114,6 +121,8 @@ export default function Home() {
         © {new Date().getFullYear()} Nguyễn Thành Lộc · Built with Next.js &
         Supabase
       </footer>
+
+      <Toast message={toast} onDone={() => setToast(null)} />
     </main>
   );
 }
