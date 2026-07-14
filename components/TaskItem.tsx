@@ -1,13 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import type { Task } from "@/lib/types";
+import type { Priority, Task } from "@/lib/types";
+
+const priorityOrder: Priority[] = ["low", "normal", "high"];
+
+const priorityStyle: Record<Priority, string> = {
+  low: "border-l-white/15",
+  normal: "border-l-accent/50",
+  high: "border-l-red-400",
+};
+
+const priorityLabel: Record<Priority, string> = {
+  low: "Thấp",
+  normal: "Bình thường",
+  high: "Cao",
+};
 
 export function TaskItem({
   task,
   onToggle,
   onDelete,
   onRename,
+  onChangePriority,
   draggable,
   onDragStart,
   onDragOver,
@@ -17,6 +32,7 @@ export function TaskItem({
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onRename: (task: Task, title: string) => void;
+  onChangePriority: (task: Task, priority: Priority) => void;
   draggable?: boolean;
   onDragStart?: () => void;
   onDragOver?: (e: React.DragEvent) => void;
@@ -41,9 +57,9 @@ export function TaskItem({
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className={`glass group flex items-center gap-3 rounded-xl px-4 py-3 ${
-        draggable ? "cursor-grab active:cursor-grabbing" : ""
-      }`}
+      className={`glass group flex items-center gap-3 rounded-xl border-l-4 px-4 py-3 ${
+        priorityStyle[task.priority]
+      } ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
       <button
         onClick={() => onToggle(task)}
@@ -82,6 +98,19 @@ export function TaskItem({
           {task.title}
         </span>
       )}
+
+      <button
+        onClick={() => {
+          const currentIndex = priorityOrder.indexOf(task.priority);
+          const next = priorityOrder[(currentIndex + 1) % priorityOrder.length];
+          onChangePriority(task, next);
+        }}
+        aria-label={`Độ ưu tiên: ${priorityLabel[task.priority]}`}
+        title={`Độ ưu tiên: ${priorityLabel[task.priority]} (bấm để đổi)`}
+        className="text-muted shrink-0 text-xs opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+      >
+        {priorityLabel[task.priority]}
+      </button>
 
       <button
         onClick={() => onDelete(task)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Task } from "@/lib/types";
+import type { Priority, Task } from "@/lib/types";
 import { TaskItem } from "./TaskItem";
 
 export function TaskList({
@@ -9,12 +9,14 @@ export function TaskList({
   onToggle,
   onDelete,
   onRename,
+  onChangePriority,
   onReorder,
 }: {
   tasks: Task[];
   onToggle: (task: Task) => void;
   onDelete: (task: Task) => void;
   onRename: (task: Task, title: string) => void;
+  onChangePriority: (task: Task, priority: Priority) => void;
   onReorder?: (tasks: Task[]) => void;
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -45,6 +47,7 @@ export function TaskList({
           onToggle={onToggle}
           onDelete={onDelete}
           onRename={onRename}
+          onChangePriority={onChangePriority}
           draggable={!!onReorder}
           onDragStart={() => setDragIndex(index)}
           onDragOver={(e) => onReorder && e.preventDefault()}

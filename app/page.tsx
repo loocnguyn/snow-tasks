@@ -7,7 +7,7 @@ import { TaskList } from "@/components/TaskList";
 import { TaskSummary } from "@/components/TaskSummary";
 import { TaskFilter, type Filter } from "@/components/TaskFilter";
 import { Toast } from "@/components/Toast";
-import type { Task } from "@/lib/types";
+import type { Priority, Task } from "@/lib/types";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -70,6 +70,13 @@ export default function Home() {
     await supabase.from("tasks").update({ title }).eq("id", task.id);
   }
 
+  async function changePriority(task: Task, priority: Priority) {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, priority } : t)),
+    );
+    await supabase.from("tasks").update({ priority }).eq("id", task.id);
+  }
+
   async function clearDone() {
     const doneIds = tasks.filter((t) => t.is_done).map((t) => t.id);
     if (doneIds.length === 0) return;
@@ -123,6 +130,7 @@ export default function Home() {
             onToggle={toggleTask}
             onDelete={deleteTask}
             onRename={renameTask}
+            onChangePriority={changePriority}
             onReorder={filter === "all" ? reorderTasks : undefined}
           />
         )}
