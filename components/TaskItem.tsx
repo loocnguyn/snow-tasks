@@ -11,6 +11,12 @@ const priorityStyle: Record<Priority, string> = {
   high: "border-l-red-400",
 };
 
+const priorityBadgeStyle: Record<Priority, string> = {
+  low: "bg-white/10 text-muted",
+  normal: "bg-accent/15 text-accent",
+  high: "bg-red-400/15 text-red-400",
+};
+
 const priorityLabel: Record<Priority, string> = {
   low: "Thấp",
   normal: "Bình thường",
@@ -107,7 +113,7 @@ export function TaskItem({
         }}
         aria-label={`Độ ưu tiên: ${priorityLabel[task.priority]}`}
         title={`Độ ưu tiên: ${priorityLabel[task.priority]} (bấm để đổi)`}
-        className="text-muted shrink-0 text-xs opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+        className={`shrink-0 rounded-full px-2.5 py-1 text-xs transition-opacity hover:opacity-80 ${priorityBadgeStyle[task.priority]}`}
       >
         {priorityLabel[task.priority]}
       </button>
