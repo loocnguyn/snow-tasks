@@ -9,11 +9,14 @@ import { TaskFilter, type Filter } from "@/components/TaskFilter";
 import { Toast } from "@/components/Toast";
 import type { Priority, Task } from "@/lib/types";
 
+const priorityWeight: Record<Priority, number> = { high: 0, normal: 1, low: 2 };
+
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [toast, setToast] = useState<string | null>(null);
+  const [sortByPriority, setSortByPriority] = useState(false);
 
   useEffect(() => {
     supabase
@@ -108,30 +111,46 @@ export default function Home() {
           />
           <TaskFilter value={filter} onChange={setFilter} />
         </div>
-        {tasks.some((t) => t.is_done) && (
-          <button
-            onClick={clearDone}
-            className="text-muted self-end text-xs underline-offset-2 hover:text-foreground hover:underline"
-          >
-            Xoá việc đã xong
-          </button>
-        )}
+        <div className="flex items-center justify-between gap-3">
+          <label className="text-muted flex items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={sortByPriority}
+              onChange={(e) => setSortByPriority(e.target.checked)}
+            />
+            Sắp xếp theo độ ưu tiên
+          </label>
+          {tasks.some((t) => t.is_done) && (
+            <button
+              onClick={clearDone}
+              className="text-muted text-xs underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Xoá việc đã xong
+            </button>
+          )}
+        </div>
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
         ) : (
           <TaskList
-            tasks={tasks.filter((t) =>
-              filter === "active"
-                ? !t.is_done
-                : filter === "done"
-                  ? t.is_done
-                  : true,
-            )}
+            tasks={tasks
+              .filter((t) =>
+                filter === "active"
+                  ? !t.is_done
+                  : filter === "done"
+                    ? t.is_done
+                    : true,
+              )
+              .sort((a, b) =>
+                sortByPriority
+                  ? priorityWeight[a.priority] - priorityWeight[b.priority]
+                  : 0,
+              )}
             onToggle={toggleTask}
             onDelete={deleteTask}
             onRename={renameTask}
             onChangePriority={changePriority}
-            onReorder={filter === "all" ? reorderTasks : undefined}
+            onReorder={filter === "all" && !sortByPriority ? reorderTasks : undefined}
           />
         )}
       </section>
