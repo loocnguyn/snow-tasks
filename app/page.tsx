@@ -17,39 +17,57 @@ export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [toast, setToast] = useState<string | null>(null);
   const [sortByPriority, setSortByPriority] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  function loadTasks() {
+    setLoading(true);
+    setLoadError(false);
     supabase
       .from("tasks")
       .select("*")
       .order("position", { ascending: true })
       .returns<Task[]>()
-      .then(({ data }) => {
-        setTasks(data ?? []);
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError(true);
+        } else {
+          setTasks(data ?? []);
+        }
         setLoading(false);
       });
+  }
+
+  useEffect(() => {
+    loadTasks();
   }, []);
 
   async function addTask(title: string) {
     const minPosition = tasks.reduce((min, t) => Math.min(min, t.position), 0);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("tasks")
       .insert({ title, position: minPosition - 1 })
       .select()
       .single<Task>();
-    if (data) {
-      setTasks((prev) => [data, ...prev]);
-      setToast("Đã thêm việc mới");
+    if (error) {
+      setToast("Không thể thêm việc, thử lại nhé");
+      return;
     }
+    setTasks((prev) => [data, ...prev]);
+    setToast("Đã thêm việc mới");
   }
 
   async function reorderTasks(reordered: Task[]) {
+    const previous = tasks;
     setTasks(reordered);
-    await Promise.all(
+    const results = await Promise.all(
       reordered.map((task, index) =>
         supabase.from("tasks").update({ position: index }).eq("id", task.id),
       ),
     );
+    if (results.some((r) => r.error)) {
+      setTasks(previous);
+      setToast("Không thể lưu thứ tự, thử lại nhé");
+    }
   }
 
   async function toggleTask(task: Task) {
@@ -57,12 +75,26 @@ export default function Home() {
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, is_done: next } : t)),
     );
-    await supabase.from("tasks").update({ is_done: next }).eq("id", task.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ is_done: next })
+      .eq("id", task.id);
+    if (error) {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, is_done: !next } : t)),
+      );
+      setToast("Không thể cập nhật, thử lại nhé");
+    }
   }
 
   async function deleteTask(task: Task) {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
-    await supabase.from("tasks").delete().eq("id", task.id);
+    const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+    if (error) {
+      setTasks((prev) => [...prev, task]);
+      setToast("Không thể xoá, thử lại nhé");
+      return;
+    }
     setToast("Đã xoá việc");
   }
 
@@ -70,14 +102,34 @@ export default function Home() {
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, title } : t)),
     );
-    await supabase.from("tasks").update({ title }).eq("id", task.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ title })
+      .eq("id", task.id);
+    if (error) {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, title: task.title } : t)),
+      );
+      setToast("Không thể đổi tên, thử lại nhé");
+    }
   }
 
   async function changePriority(task: Task, priority: Priority) {
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, priority } : t)),
     );
-    await supabase.from("tasks").update({ priority }).eq("id", task.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ priority })
+      .eq("id", task.id);
+    if (error) {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === task.id ? { ...t, priority: task.priority } : t,
+        ),
+      );
+      setToast("Không thể đổi độ ưu tiên, thử lại nhé");
+    }
   }
 
   async function togglePin(task: Task) {
@@ -85,14 +137,29 @@ export default function Home() {
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, pinned } : t)),
     );
-    await supabase.from("tasks").update({ pinned }).eq("id", task.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ pinned })
+      .eq("id", task.id);
+    if (error) {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, pinned: !pinned } : t)),
+      );
+      setToast("Không thể ghim, thử lại nhé");
+    }
   }
 
   async function clearDone() {
+    const previous = tasks;
     const doneIds = tasks.filter((t) => t.is_done).map((t) => t.id);
     if (doneIds.length === 0) return;
     setTasks((prev) => prev.filter((t) => !t.is_done));
-    await supabase.from("tasks").delete().in("id", doneIds);
+    const { error } = await supabase.from("tasks").delete().in("id", doneIds);
+    if (error) {
+      setTasks(previous);
+      setToast("Không thể xoá, thử lại nhé");
+      return;
+    }
     setToast("Đã xoá các việc hoàn thành");
   }
 
@@ -139,6 +206,18 @@ export default function Home() {
         </div>
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
+        ) : loadError ? (
+          <div className="glass flex flex-col items-center gap-3 rounded-xl px-4 py-10 text-center">
+            <p className="text-muted text-sm">
+              Không tải được danh sách việc. Kiểm tra kết nối mạng và thử lại.
+            </p>
+            <button
+              onClick={loadTasks}
+              className="rounded-lg bg-accent/90 px-4 py-2 text-sm font-medium text-background hover:opacity-90"
+            >
+              Thử lại
+            </button>
+          </div>
         ) : (
           <TaskList
             tasks={tasks
