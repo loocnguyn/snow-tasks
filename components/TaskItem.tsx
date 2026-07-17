@@ -29,6 +29,7 @@ export function TaskItem({
   onDelete,
   onRename,
   onChangePriority,
+  onTogglePin,
   draggable,
   onDragStart,
   onDragOver,
@@ -39,6 +40,7 @@ export function TaskItem({
   onDelete: (task: Task) => void;
   onRename: (task: Task, title: string) => void;
   onChangePriority: (task: Task, priority: Priority) => void;
+  onTogglePin: (task: Task) => void;
   draggable?: boolean;
   onDragStart?: () => void;
   onDragOver?: (e: React.DragEvent) => void;
@@ -104,6 +106,17 @@ export function TaskItem({
           {task.title}
         </span>
       )}
+
+      <button
+        onClick={() => onTogglePin(task)}
+        aria-label={task.pinned ? "Bỏ ghim" : "Ghim việc này"}
+        title={task.pinned ? "Bỏ ghim" : "Ghim lên đầu"}
+        className={`shrink-0 text-sm transition-opacity ${
+          task.pinned ? "opacity-100" : "opacity-0 group-hover:opacity-60 hover:!opacity-100"
+        }`}
+      >
+        📌
+      </button>
 
       <button
         onClick={() => {

@@ -80,6 +80,14 @@ export default function Home() {
     await supabase.from("tasks").update({ priority }).eq("id", task.id);
   }
 
+  async function togglePin(task: Task) {
+    const pinned = !task.pinned;
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, pinned } : t)),
+    );
+    await supabase.from("tasks").update({ pinned }).eq("id", task.id);
+  }
+
   async function clearDone() {
     const doneIds = tasks.filter((t) => t.is_done).map((t) => t.id);
     if (doneIds.length === 0) return;
@@ -141,15 +149,17 @@ export default function Home() {
                     ? t.is_done
                     : true,
               )
-              .sort((a, b) =>
-                sortByPriority
+              .sort((a, b) => {
+                if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+                return sortByPriority
                   ? priorityWeight[a.priority] - priorityWeight[b.priority]
-                  : 0,
-              )}
+                  : 0;
+              })}
             onToggle={toggleTask}
             onDelete={deleteTask}
             onRename={renameTask}
             onChangePriority={changePriority}
+            onTogglePin={togglePin}
             onReorder={filter === "all" && !sortByPriority ? reorderTasks : undefined}
           />
         )}

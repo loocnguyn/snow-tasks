@@ -6,5 +6,6 @@ export type Task = {
   is_done: boolean;
   position: number;
   priority: Priority;
+  pinned: boolean;
   created_at: string;
 };

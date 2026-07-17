@@ -10,6 +10,7 @@ export function TaskList({
   onDelete,
   onRename,
   onChangePriority,
+  onTogglePin,
   onReorder,
 }: {
   tasks: Task[];
@@ -17,6 +18,7 @@ export function TaskList({
   onDelete: (task: Task) => void;
   onRename: (task: Task, title: string) => void;
   onChangePriority: (task: Task, priority: Priority) => void;
+  onTogglePin: (task: Task) => void;
   onReorder?: (tasks: Task[]) => void;
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -48,6 +50,7 @@ export function TaskList({
           onDelete={onDelete}
           onRename={onRename}
           onChangePriority={onChangePriority}
+          onTogglePin={onTogglePin}
           draggable={!!onReorder}
           onDragStart={() => setDragIndex(index)}
           onDragOver={(e) => onReorder && e.preventDefault()}
