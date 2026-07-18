@@ -39,6 +39,36 @@ export default function Home() {
 
   useEffect(() => {
     loadTasks();
+
+    const channel = supabase
+      .channel("tasks-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const inserted = payload.new as Task;
+            setTasks((prev) =>
+              prev.some((t) => t.id === inserted.id)
+                ? prev
+                : [...prev, inserted].sort((a, b) => a.position - b.position),
+            );
+          } else if (payload.eventType === "UPDATE") {
+            const updated = payload.new as Task;
+            setTasks((prev) =>
+              prev.map((t) => (t.id === updated.id ? updated : t)),
+            );
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = (payload.old as Task).id;
+            setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function addTask(title: string) {
