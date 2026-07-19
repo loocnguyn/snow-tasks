@@ -18,6 +18,7 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [sortByPriority, setSortByPriority] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [search, setSearch] = useState("");
 
   function loadTasks() {
     setLoading(true);
@@ -209,6 +210,12 @@ export default function Home() {
 
       <section className="animate-in mt-8 flex flex-col gap-4 sm:mt-10">
         <TaskInput onAdd={addTask} existingTitles={tasks.map((t) => t.title)} />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm việc theo tên..."
+          className="glass rounded-xl px-4 py-2.5 text-sm outline-none placeholder:text-muted focus:border-accent/60"
+        />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <TaskSummary
             total={tasks.length}
@@ -258,6 +265,9 @@ export default function Home() {
                     ? t.is_done
                     : true,
               )
+              .filter((t) =>
+                t.title.toLowerCase().includes(search.trim().toLowerCase()),
+              )
               .sort((a, b) => {
                 if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
                 return sortByPriority
@@ -269,7 +279,11 @@ export default function Home() {
             onRename={renameTask}
             onChangePriority={changePriority}
             onTogglePin={togglePin}
-            onReorder={filter === "all" && !sortByPriority ? reorderTasks : undefined}
+            onReorder={
+              filter === "all" && !sortByPriority && !search.trim()
+                ? reorderTasks
+                : undefined
+            }
           />
         )}
       </section>
