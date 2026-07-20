@@ -104,6 +104,11 @@ export function TaskItem({
           }`}
         >
           {task.title}
+          {task.tag && (
+            <span className="text-muted ml-2 rounded-full bg-white/5 px-2 py-0.5 text-xs">
+              {task.tag}
+            </span>
+          )}
         </span>
       )}
 

@@ -7,5 +7,6 @@ export type Task = {
   position: number;
   priority: Priority;
   pinned: boolean;
+  tag: string | null;
   created_at: string;
 };

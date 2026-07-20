@@ -72,11 +72,11 @@ export default function Home() {
     };
   }, []);
 
-  async function addTask(title: string) {
+  async function addTask(title: string, tag: string | null) {
     const minPosition = tasks.reduce((min, t) => Math.min(min, t.position), 0);
     const { data, error } = await supabase
       .from("tasks")
-      .insert({ title, position: minPosition - 1 })
+      .insert({ title, tag, position: minPosition - 1 })
       .select()
       .single<Task>();
     if (error) {
@@ -265,9 +265,14 @@ export default function Home() {
                     ? t.is_done
                     : true,
               )
-              .filter((t) =>
-                t.title.toLowerCase().includes(search.trim().toLowerCase()),
-              )
+              .filter((t) => {
+                const q = search.trim().toLowerCase();
+                if (!q) return true;
+                return (
+                  t.title.toLowerCase().includes(q) ||
+                  (t.tag ?? "").toLowerCase().includes(q)
+                );
+              })
               .sort((a, b) => {
                 if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
                 return sortByPriority

@@ -6,10 +6,11 @@ export function TaskInput({
   onAdd,
   existingTitles,
 }: {
-  onAdd: (title: string) => void;
+  onAdd: (title: string, tag: string | null) => void;
   existingTitles: string[];
 }) {
   const [value, setValue] = useState("");
+  const [tag, setTag] = useState("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,8 +45,9 @@ export function TaskInput({
     }
 
     setError(null);
-    onAdd(title);
+    onAdd(title, tag.trim() || null);
     setValue("");
+    setTag("");
   }
 
   return (
@@ -60,6 +62,12 @@ export function TaskInput({
           }}
           placeholder="Hôm nay cần làm gì? (nhấn / để focus)"
           className="glass flex-1 rounded-xl px-4 py-3 text-sm outline-none placeholder:text-muted focus:border-accent/60"
+        />
+        <input
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
+          placeholder="Nhãn"
+          className="glass w-24 rounded-xl px-3 py-3 text-sm outline-none placeholder:text-muted focus:border-accent/60"
         />
         <button
           type="submit"
