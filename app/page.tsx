@@ -7,6 +7,7 @@ import { TaskList } from "@/components/TaskList";
 import { TaskSummary } from "@/components/TaskSummary";
 import { TaskFilter, type Filter } from "@/components/TaskFilter";
 import { Toast } from "@/components/Toast";
+import { WeeklyStats } from "@/components/WeeklyStats";
 import type { Priority, Task } from "@/lib/types";
 
 const priorityWeight: Record<Priority, number> = { high: 0, normal: 1, low: 2 };
@@ -103,16 +104,25 @@ export default function Home() {
 
   async function toggleTask(task: Task) {
     const next = !task.is_done;
+    const completedAt = next ? new Date().toISOString() : null;
     setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, is_done: next } : t)),
+      prev.map((t) =>
+        t.id === task.id
+          ? { ...t, is_done: next, completed_at: completedAt }
+          : t,
+      ),
     );
     const { error } = await supabase
       .from("tasks")
-      .update({ is_done: next })
+      .update({ is_done: next, completed_at: completedAt })
       .eq("id", task.id);
     if (error) {
       setTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? { ...t, is_done: !next } : t)),
+        prev.map((t) =>
+          t.id === task.id
+            ? { ...t, is_done: !next, completed_at: task.completed_at }
+            : t,
+        ),
       );
       setToast("Không thể cập nhật, thử lại nhé");
     }
@@ -223,6 +233,7 @@ export default function Home() {
           />
           <TaskFilter value={filter} onChange={setFilter} />
         </div>
+        <WeeklyStats tasks={tasks} />
         <div className="flex items-center justify-between gap-3">
           <label className="text-muted flex items-center gap-2 text-xs">
             <input
