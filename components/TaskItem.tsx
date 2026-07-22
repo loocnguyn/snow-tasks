@@ -30,6 +30,7 @@ export function TaskItem({
   onRename,
   onChangePriority,
   onTogglePin,
+  onChangeNotes,
   draggable,
   onDragStart,
   onDragOver,
@@ -41,6 +42,7 @@ export function TaskItem({
   onRename: (task: Task, title: string) => void;
   onChangePriority: (task: Task, priority: Priority) => void;
   onTogglePin: (task: Task) => void;
+  onChangeNotes: (task: Task, notes: string) => void;
   draggable?: boolean;
   onDragStart?: () => void;
   onDragOver?: (e: React.DragEvent) => void;
@@ -48,6 +50,8 @@ export function TaskItem({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.title);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [notesDraft, setNotesDraft] = useState(task.notes ?? "");
 
   function commit() {
     const title = draft.trim();
@@ -65,10 +69,11 @@ export function TaskItem({
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className={`glass group flex items-center gap-3 rounded-xl border-l-4 px-4 py-3 ${
+      className={`glass group rounded-xl border-l-4 px-4 py-3 ${
         priorityStyle[task.priority]
       } ${draggable ? "cursor-grab active:cursor-grabbing" : ""}`}
     >
+    <div className="flex items-center gap-3">
       <button
         onClick={() => onToggle(task)}
         aria-label={task.is_done ? "Bỏ hoàn thành" : "Đánh dấu hoàn thành"}
@@ -137,12 +142,39 @@ export function TaskItem({
       </button>
 
       <button
+        onClick={() => setNotesOpen((v) => !v)}
+        aria-label="Ghi chú"
+        title="Ghi chú"
+        className={`shrink-0 text-sm transition-opacity ${
+          task.notes ? "opacity-100" : "opacity-0 group-hover:opacity-60 hover:!opacity-100"
+        }`}
+      >
+        📝
+      </button>
+
+      <button
         onClick={() => onDelete(task)}
         aria-label="Xoá việc"
         className="text-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
       >
         ✕
       </button>
+    </div>
+
+      {notesOpen && (
+        <textarea
+          value={notesDraft}
+          onChange={(e) => setNotesDraft(e.target.value)}
+          onBlur={() => {
+            if (notesDraft !== (task.notes ?? "")) {
+              onChangeNotes(task, notesDraft);
+            }
+          }}
+          placeholder="Ghi chú cho việc này..."
+          rows={2}
+          className="mt-2 w-full rounded-md bg-white/5 px-3 py-2 text-sm outline-none placeholder:text-muted"
+        />
+      )}
     </li>
   );
 }

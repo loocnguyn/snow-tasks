@@ -191,6 +191,22 @@ export default function Home() {
     }
   }
 
+  async function changeNotes(task: Task, notes: string) {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, notes } : t)),
+    );
+    const { error } = await supabase
+      .from("tasks")
+      .update({ notes })
+      .eq("id", task.id);
+    if (error) {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, notes: task.notes } : t)),
+      );
+      setToast("Không thể lưu ghi chú, thử lại nhé");
+    }
+  }
+
   async function clearDone() {
     const previous = tasks;
     const doneIds = tasks.filter((t) => t.is_done).map((t) => t.id);
@@ -363,6 +379,7 @@ export default function Home() {
             onRename={renameTask}
             onChangePriority={changePriority}
             onTogglePin={togglePin}
+            onChangeNotes={changeNotes}
             onReorder={
               filter === "all" && !sortByPriority && !search.trim()
                 ? reorderTasks
