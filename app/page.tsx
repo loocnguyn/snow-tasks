@@ -205,6 +205,36 @@ export default function Home() {
     setToast("Đã xoá các việc hoàn thành");
   }
 
+  async function importTasks(file: File) {
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) throw new Error("invalid format");
+
+      const minPosition = tasks.reduce((min, t) => Math.min(min, t.position), 0);
+      const rows = parsed.map((t, i) => ({
+        title: String(t.title ?? "Việc không tên"),
+        tag: t.tag ?? null,
+        priority: ["low", "normal", "high"].includes(t.priority)
+          ? t.priority
+          : "normal",
+        pinned: !!t.pinned,
+        is_done: !!t.is_done,
+        position: minPosition - (i + 1),
+      }));
+
+      const { data, error } = await supabase.from("tasks").insert(rows).select();
+      if (error) {
+        setToast("Không thể nhập file, kiểm tra định dạng JSON");
+        return;
+      }
+      setTasks((prev) => [...(data as Task[]), ...prev]);
+      setToast(`Đã nhập ${data.length} việc từ file`);
+    } catch {
+      setToast("File JSON không hợp lệ");
+    }
+  }
+
   function exportTasks() {
     const blob = new Blob([JSON.stringify(tasks, null, 2)], {
       type: "application/json",
@@ -259,6 +289,19 @@ export default function Home() {
             Sắp xếp theo độ ưu tiên
           </label>
           <div className="flex items-center gap-3">
+            <label className="text-muted cursor-pointer text-xs underline-offset-2 hover:text-foreground hover:underline">
+              Nhập JSON
+              <input
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) importTasks(file);
+                  e.target.value = "";
+                }}
+              />
+            </label>
             {tasks.length > 0 && (
               <button
                 onClick={exportTasks}
