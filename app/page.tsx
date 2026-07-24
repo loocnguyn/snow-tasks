@@ -205,6 +205,19 @@ export default function Home() {
     setToast("Đã xoá các việc hoàn thành");
   }
 
+  function exportTasks() {
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `snow-tasks-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setToast("Đã xuất file JSON");
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-12 sm:px-6 sm:py-24">
       <header className="animate-in flex flex-col items-center text-center">
@@ -245,14 +258,24 @@ export default function Home() {
             />
             Sắp xếp theo độ ưu tiên
           </label>
-          {tasks.some((t) => t.is_done) && (
-            <button
-              onClick={clearDone}
-              className="text-muted text-xs underline-offset-2 hover:text-foreground hover:underline"
-            >
-              Xoá việc đã xong
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {tasks.length > 0 && (
+              <button
+                onClick={exportTasks}
+                className="text-muted text-xs underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Xuất JSON
+              </button>
+            )}
+            {tasks.some((t) => t.is_done) && (
+              <button
+                onClick={clearDone}
+                className="text-muted text-xs underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Xoá việc đã xong
+              </button>
+            )}
+          </div>
         </div>
         {loading ? (
           <p className="text-muted py-10 text-center text-sm">Đang tải…</p>
