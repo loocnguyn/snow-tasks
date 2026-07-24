@@ -8,6 +8,7 @@ import { TaskSummary } from "@/components/TaskSummary";
 import { TaskFilter, type Filter } from "@/components/TaskFilter";
 import { Toast } from "@/components/Toast";
 import { WeeklyStats } from "@/components/WeeklyStats";
+import { StreakBadge } from "@/components/StreakBadge";
 import type { Priority, Task } from "@/lib/types";
 
 const priorityWeight: Record<Priority, number> = { high: 0, normal: 1, low: 2 };
@@ -233,6 +234,7 @@ export default function Home() {
           />
           <TaskFilter value={filter} onChange={setFilter} />
         </div>
+        <StreakBadge tasks={tasks} />
         <WeeklyStats tasks={tasks} />
         <div className="flex items-center justify-between gap-3">
           <label className="text-muted flex items-center gap-2 text-xs">
