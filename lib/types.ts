@@ -9,5 +9,6 @@ export type Task = {
   pinned: boolean;
   tag: string | null;
   completed_at: string | null;
+  notes: string | null;
   created_at: string;
 };
