@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Snow Tasks — Việc cần làm",
   description: "Ứng dụng ghi lại những việc cần làm mỗi ngày.",
+};
+
+// Next 16 không nhận themeColor trong `metadata` nữa, phải tách sang `viewport`.
+export const viewport: Viewport = {
   themeColor: "#060910",
 };
 
